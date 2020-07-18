@@ -216,6 +216,7 @@ scriptversion=0.1
 wg_interface='tlwg_mgmt'
 wg_listenport=51820
 wg_configfile='/etc/wireguard/'${wg_interface}'.conf'
+filename_cacert="${configpath_bootstrap}/cacert.pem"
 filename_config="${configpath_bootstrap}/${configfile}"
 filename_controller=${configpath_bootstrap}'/controller'
 filename_config_key=${configpath_bootstrap}'/config_key'
@@ -226,6 +227,7 @@ filename_wg_shared=${configpath_bootstrap}'/wg_shared'
 filename_bootstrapconfig='/tmp/tl_bootstrapconfig'
 filename_counter_invocations=${configpath_bootstrap}'/counter_invocations'
 filename_counter_noconnect=${configpath_bootstrap}'/counter_noconnect'
+curl_opts_bootstrap=()
 
 ### Initial actions ###
 time_start=$(date +%s)
@@ -511,16 +513,19 @@ if [ -z "${controller}" ]; then
   controller="${controller}.bootstrap.towalink.net"
   controller=$(getEffectiveHost "$controller") # resolve CNAMEs to avoid certificate errors
 fi
+if [ -e "$filename_cacert" ]; then
+  curl_opts_bootstrap+=(--cacert ${filename_cacert})
+fi
 success=0
 counter=0
 while [ $success -ne 1 ]
 do
   # Try to download bootstrap config if this machine is still unconfigured or after one hour without connection
-  filename_bootstrapconfig='/tmp/tl_bootstrapconfig.sh'  
+  filename_bootstrapconfig='/tmp/tl_bootstrapconfig.sh' # must be in while loop
   if [ ! -e "${wg_configfile}" ] || [ $counter -gt 240 ]; then
     doOutputVerbose "Attempting to download and process bootstrap config from [$controller]..."
     # --get would encode data in query string instead of posting the data
-    http_response=$(curl --max-time 5 --silent --write-out %{http_code} --data-urlencode "scriptversion=$scriptversion" --data-urlencode "hostname=$(hostname -f)" --data-urlencode "recovery-key=$recovery_key" --data-urlencode "config-key=$config_key" "https://$controller/bootstrap/" --output "$filename_bootstrapconfig" && echo 0 || echo $?)
+    http_response=$(curl --max-time 5 --silent "${curl_opts_bootstrap[@]}" --write-out %{http_code} --data-urlencode "scriptversion=$scriptversion" --data-urlencode "hostname=$(hostname -f)" --data-urlencode "recovery-key=$recovery_key" --data-urlencode "config-key=$config_key" "https://$controller/bootstrap/" --output "$filename_bootstrapconfig" && echo 0 || echo $?)
     retcode=$?
     if [ $retcode -eq 0 ]; then  
       if [ $http_response -eq 2000 ]; then  # a zero is appended to the usual http response code
@@ -539,7 +544,7 @@ do
             fi
           fi
           if [ ! -z "${filename_bootstrapconfig}" ]; then        
-            chmod u+x "{$filename_bootstrapconfig}"
+            chmod u+x "${filename_bootstrapconfig}"
             doOutput "Running downloaded bootstrap config script..."
             source "${filename_bootstrapconfig}"
             counter=0            
