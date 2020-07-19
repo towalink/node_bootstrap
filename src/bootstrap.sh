@@ -507,8 +507,9 @@ else
 fi
 
 ### Download and run bootstrap config script until management connection is up and working ###
+mac_addr=$(getPrimaryMacAddress)
 if [ -z "${controller}" ]; then
-  controller=$(getPrimaryMacAddress)
+  controller=$mac_addr
   controller=${controller//:} # delete colons from MAC address
   controller="${controller}.bootstrap.towalink.net"
   controller=$(getEffectiveHost "$controller") # resolve CNAMEs to avoid certificate errors
@@ -525,7 +526,7 @@ do
   if [ ! -e "${wg_configfile}" ] || [ $counter -gt 240 ]; then
     doOutputVerbose "Attempting to download and process bootstrap config from [$controller]..."
     # --get would encode data in query string instead of posting the data
-    http_response=$(curl --max-time 5 --silent "${curl_opts_bootstrap[@]}" --write-out %{http_code} --data-urlencode "scriptversion=$scriptversion" --data-urlencode "hostname=$(hostname -f)" --data-urlencode "recovery-key=$recovery_key" --data-urlencode "config-key=$config_key" "https://$controller/bootstrap/" --output "$filename_bootstrapconfig" && echo 0 || echo $?)
+    http_response=$(curl --max-time 5 --silent "${curl_opts_bootstrap[@]}" --write-out %{http_code} --data-urlencode "scriptversion=$scriptversion"  --data-urlencode "mac=$mac_addr" --data-urlencode "hostname=$(hostname -f)" --data-urlencode "recovery-key=$recovery_key" --data-urlencode "config-key=$config_key" "https://$controller/bootstrap/" --output "$filename_bootstrapconfig" && echo 0 || echo $?)
     retcode=$?
     if [ $retcode -eq 0 ]; then  
       if [ $http_response -eq 2000 ]; then  # a zero is appended to the usual http response code
