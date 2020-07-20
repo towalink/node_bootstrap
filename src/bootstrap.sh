@@ -505,6 +505,12 @@ if [ ! -e "${filename_recovery_key}" ]; then
 else
   recovery_key=$(cat "${filename_recovery_key}")
 fi
+if [ ! -e "${filename_wg_private}" ]; then
+  install -m 700 /dev/null "${filename_wg_private}"
+  wg genkey > "${filename_wg_private}"  
+fi
+wg_private=$(cat "${filename_wg_private}")  
+wg_public=$(echo "$wg_private" | wg pubkey)
 
 ### Download and run bootstrap config script until management connection is up and working ###
 mac_addr=$(getPrimaryMacAddress)
@@ -526,7 +532,7 @@ do
   if [ ! -e "${wg_configfile}" ] || [ $counter -gt 240 ]; then
     doOutputVerbose "Attempting to download and process bootstrap config from [$controller]..."
     # --get would encode data in query string instead of posting the data
-    http_response=$(curl --max-time 5 --silent "${curl_opts_bootstrap[@]}" --write-out %{http_code} --data-urlencode "scriptversion=$scriptversion"  --data-urlencode "mac=$mac_addr" --data-urlencode "hostname=$(hostname -f)" --data-urlencode "recovery-key=$recovery_key" --data-urlencode "config-key=$config_key" "https://$controller/bootstrap/" --output "$filename_bootstrapconfig" && echo 0 || echo $?)
+    http_response=$(curl --max-time 5 --silent "${curl_opts_bootstrap[@]}" --write-out %{http_code} --data-urlencode "scriptversion=$scriptversion"  --data-urlencode "mac=$mac_addr" --data-urlencode "hostname=$(hostname -f)" --data-urlencode "recovery-key=$recovery_key" --data-urlencode "config-key=$config_key" --data-urlencode "wg_public=$wg_public" "https://$controller/bootstrap/" --output "$filename_bootstrapconfig" && echo 0 || echo $?)
     retcode=$?
     if [ $retcode -eq 0 ]; then  
       if [ $http_response -eq 2000 ]; then  # a zero is appended to the usual http response code
