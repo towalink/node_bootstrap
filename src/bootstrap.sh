@@ -558,6 +558,8 @@ do
             fi
           fi
         fi
+      elif [ $http_response -eq "00052" ]; then  # http response 204
+        doOutputVerbose "Bootstrap config download failed. Controller reached but config not yet available. Ignoring and continuing"      
       else
         doOutputVerbose "Bootstrap config download failed with http response ${http_response}. Ignoring and continuing"
       fi
