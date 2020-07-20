@@ -574,6 +574,13 @@ do
     fi  
   fi
   if [ -e "${wg_configfile}" ]; then
+    # Enable management interface
+    retcode=$(wg-quick up "$wg_interface" && echo 0 || echo $?)
+    if [ $retcode -eq 0 ]; then  
+      doOutputVerbose "Interface [$wg_interface] is up"
+    else
+      doOutput "Error setting up interface [$wg_interface]"
+    fi
     # Check for successful connection to controller
     retcode=$(ping -c 1 -W 3 -w 3 -q fe80::1%${wg_interface} > /dev/null; echo $?)
     if [ $retcode -eq 0 ]; then
