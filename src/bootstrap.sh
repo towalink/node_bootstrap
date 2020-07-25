@@ -452,12 +452,14 @@ if [ -e "/sbin/apk" ]; then # Alpine (apk-based)
       restart_required=1
     fi
   fi
-  if ! apk info -q --installed wireguard-tools wireguard-tools-wg wireguard-tools-wg-quick bind-tools ; then
+  if ! apk info -q --installed wireguard-tools wireguard-tools-wg wireguard-tools-wg-quick bind-tools curl ; then
     doOutputVerbose "Making sure that required tool packages are installed"
     # WireGuard tools  
     apk add wireguard-tools wireguard-tools-wg wireguard-tools-wg-quick
     # "host" command and "dig" command
     apk add bind-tools
+    # "curl" command
+    apk add curl
   fi
 else # non-Alpine
   if [ ! -e "/usr/bin/wg" ]; then
