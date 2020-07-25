@@ -353,7 +353,7 @@ command_args="$@"
 "
   echo "$init_script" > /etc/init.d/$name
   chmod u+x /etc/init.d/$name
-  rc-update add $name default
+  rc-update -q add $name default
 else # non-Alpine ==> systemd
   init_script="
 [Unit]
