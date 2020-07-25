@@ -575,6 +575,7 @@ do
   fi
   if [ -e "${wg_configfile}" ]; then
     # Enable management interface
+    retcode=$(wg-quick down "$wg_interface" 2>&1 > /dev/null && echo 0 || echo $?) # for the case that interface is up
     retcode=$(wg-quick up "$wg_interface" && echo 0 || echo $?)
     if [ $retcode -eq 0 ]; then  
       doOutputVerbose "Interface [$wg_interface] is up"
