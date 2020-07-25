@@ -478,7 +478,7 @@ fi
 
 ### Based on the changes done (new kernel...), trigger a reboot ###
 if [[ $restart_required -ne 0 ]]; then
-  read -t 15 -p "Restart required. Rebooting machine in fifteen seconds (unless you interrupt this script now)..."
+  read -t 15 -p "Restart required. Rebooting machine in fifteen seconds (unless you interrupt this script now)..." || :
   doOutput "Triggering reboot..."
   reboot
   exit
