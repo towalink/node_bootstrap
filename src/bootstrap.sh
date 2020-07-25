@@ -440,18 +440,25 @@ fi
 if [ -e "/sbin/apk" ]; then # Alpine (apk-based)
   # WireGuard kernel
   if [[ $(apk info | grep linux-virt | wc -l) -ne 0 ]]; then # virt kernel installed?
-    doOutput "Installing WireGuard virt kernel..."
-    apk add wireguard-virt
-    restart_required=1
+    if ! apk info -q --installed wireguard-virt ; then
+      doOutput "Installing WireGuard virt kernel..."
+      apk add wireguard-virt
+      restart_required=1
+    fi
   else # no virt kernel installed
-    doOutput "Installing WireGuard kernel..."
-    apk add wireguard-vanilla
+    if ! apk info -q --installed wireguard-virt ; then
+      doOutput "Installing WireGuard kernel..."
+      apk add wireguard-vanilla
+      restart_required=1
+    fi
   fi
-  doOutputVerbose "Making sure that required tool packages are installed"
-  # WireGuard tools  
-  apk add wireguard-tools wireguard-tools-wg wireguard-tools-wg-quick
-  # "host" command and "dig" command
-  apk add bind-tools 
+  if ! apk info -q --installed wireguard-tools wireguard-tools-wg wireguard-tools-wg-quick bind-tools ; then
+    doOutputVerbose "Making sure that required tool packages are installed"
+    # WireGuard tools  
+    apk add wireguard-tools wireguard-tools-wg wireguard-tools-wg-quick
+    # "host" command and "dig" command
+    apk add bind-tools
+  fi
 else # non-Alpine
   if [ ! -e "/usr/bin/wg" ]; then
     if [[ "$VERSION_CODENAME" == "buster" ]]; then
