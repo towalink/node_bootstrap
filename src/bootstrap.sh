@@ -326,7 +326,7 @@ fi
 if [[ ! "$(realpath $0)" == "$scriptfile" ]]; then # don't overwrite a running script
   doOutputVerbose "Currently not running bootstrap script from ["$scriptfile"]. Installing at that location"
   # Download official current version
-  retcode=$(wget https://nodeinstall.towalink.net/bootstrap/ -O "/tmp/tl_bootstrap.sh" -T 10 -q && echo 0 || echo $?)
+  retcode=$(wget https://install.towalink.net/node/ -O "/tmp/tl_bootstrap.sh" -T 10 -q && echo 0 || echo $?)
   if [ $retcode -eq 0 ]; then  
     install -m 700 "/tmp/tl_bootstrap.sh" "$scriptfile"
     doOutputVerbose "Bootstrap script downloaded and installed"
