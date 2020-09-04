@@ -349,6 +349,9 @@ depend() {
 name="$name"
 command="$scriptfile"
 command_args="$@"
+pidfile="/run/$RC_SVCNAME.pid"
+command_background="yes"
+stopsig="SIGTERM"
 "
   echo "$init_script" > /etc/init.d/$name
   chmod u+x /etc/init.d/$name
