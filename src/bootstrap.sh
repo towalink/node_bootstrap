@@ -349,7 +349,7 @@ depend() {
 name="$name"
 command="$scriptfile"
 command_args="$@"
-pidfile="/run/$RC_SVCNAME.pid"
+pidfile="/run/\$RC_SVCNAME.pid"
 command_background="yes"
 stopsig="SIGTERM"
 "
