@@ -340,8 +340,7 @@ fi
 doOutputVerbose "Making sure that bootstrap script gets started on boot"
 name=towalink_bootstrap
 if [ -e "/etc/alpine-release" ]; then # Alpine
-  init_script="
-#!/sbin/openrc-run
+  init_script="#!/sbin/openrc-run
 
 depend() {
 	need net
