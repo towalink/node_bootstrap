@@ -1,6 +1,6 @@
 # Towalink Node Bootstrap
 
-> Bootstraps a Towalink node.
+Bootstraps a Towalink Node.
 
 ---
 
