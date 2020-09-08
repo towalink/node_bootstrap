@@ -533,6 +533,8 @@ if [ -z "${controller}" ]; then
 fi
 if [ -e "$filename_cacert" ]; then
   curl_opts_bootstrap+=(--cacert ${filename_cacert})
+else
+  doOutput "Warning: File ${filename_cacert} for CA certificate is not present. Self-signed Controller certificates will be rejected"
 fi
 success=0
 counter=0
