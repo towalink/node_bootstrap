@@ -9,7 +9,7 @@
 # The Towalink Project
 # Author: Dirk Henrici
 # Creation: Sept. 2019
-# Last update: July 2020
+# Last update: September 2020
 # License: GPL3
 
 # This program is free software: you can redistribute it and/or modify  
