@@ -462,6 +462,8 @@ if [ -e "/sbin/apk" ]; then # Alpine (apk-based)
     apk add bind-tools
     # "curl" command
     apk add curl
+    # python (for remote management using Ansible)
+    apk add python3
   fi
 else # non-Alpine
   if [ ! -e "/usr/bin/wg" ]; then
