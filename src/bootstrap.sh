@@ -9,7 +9,7 @@
 # The Towalink Project
 # Author: Dirk Henrici
 # Creation: Sept. 2019
-# Last update: September 2020
+# Last update: Dezember 2020
 # License: GPL3
 
 # This program is free software: you can redistribute it and/or modify  
@@ -393,6 +393,11 @@ else # non-Alpine
   if [ ! -e "/usr/bin/host" ]; then
     doOutputVerbose "Installing bind9-host"
     apt-get install bind9-host
+  fi
+  # "route" command
+  if [ ! -e "/sbin/route" ]; then
+    doOutputVerbose "Installing net-tools"
+    apt-get install net-tools
   fi
 fi
 
