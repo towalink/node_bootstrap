@@ -15,6 +15,8 @@ bash <(wget -qO- https://install.towalink.net/node/)
 The script will install required software packages and the script itself, make sure the script runs again at boot time, and attempts to connect to a Towalink Controller.
 After a Node is prepared like this, a node attach can be done on the Towalink Controller.
 
+Note: Don't prepend ``sudo`` to get root privileges since this will fail. You can do ``sudo -i`` first and then issue the installation command.
+
 Advanced installation options:
 ```shell
 bash <(wget -qO- https://install.towalink.net/node/) -v

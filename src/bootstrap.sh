@@ -4,24 +4,24 @@
 ### Bootstrap a Towalink node ###
 #################################
 
-# Written for Raspbian (based on Debian Buster) and Alpine Linux
+# Written for Raspbian (based on Debian Buster or Bullseye) and Alpine Linux
 #
 # The Towalink Project
 # Author: Dirk Henrici
 # Creation: Sept. 2019
-# Last update: Dezember 2020
+# Last update: July 2022
 # License: GPL3
 
-# This program is free software: you can redistribute it and/or modify  
-# it under the terms of the GNU General Public License as published by  
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
-# 
-# This program is distributed in the hope that it will be useful, but 
-# WITHOUT ANY WARRANTY; without even the implied warranty of 
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 # General Public License for more details.
-# 
-# You should have received a copy of the GNU General Public License 
+#
+# You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
@@ -238,7 +238,7 @@ if [ ! -z "${logfile}" ]; then
 fi
 
 # Check for root privileges
-# Note: previous way of checking:  if [ $(id -u) -gt 0 ]; then 
+# Note: previous way of checking:  if [ $(id -u) -gt 0 ]; then
 if [[ "$EUID" -ne 0 ]]; then
   exitWithError "You need to run this script with root privileges"
 fi
@@ -298,8 +298,8 @@ chmod 700 ${configpath} -R
 
 # Make variables from /etc/os-release available in this script
 source <(cat /etc/os-release)
-# $ID -> alpine, debian, raspian 
-# $VERSION_CODENAME -> buster (on Debian)
+# $ID -> alpine, debian, raspian
+# $VERSION_CODENAME -> buster/bullseye (on Debian)
 
 # Increase counters
 increaseCounterFile "${filename_counter_invocations}"
@@ -327,7 +327,7 @@ if [[ ! "$(realpath $0)" == "$scriptfile" ]]; then # don't overwrite a running s
   doOutputVerbose "Currently not running bootstrap script from ["$scriptfile"]. Installing at that location"
   # Download official current version
   retcode=$(wget https://install.towalink.net/node/ -O "/tmp/tl_bootstrap.sh" -T 10 -q && echo 0 || echo $?)
-  if [ $retcode -eq 0 ]; then  
+  if [ $retcode -eq 0 ]; then
     install -m 700 "/tmp/tl_bootstrap.sh" "$scriptfile"
     doOutputVerbose "Bootstrap script downloaded and installed"
   else
@@ -345,7 +345,7 @@ if [ -e "/etc/alpine-release" ]; then # Alpine
 depend() {
 	need net
 }
- 
+
 name="$name"
 command="$scriptfile"
 command_args="$@"
@@ -409,10 +409,10 @@ tmp1=$tmp1.recovery.towalink.net
 tmp1=$(getEffectiveHost "$tmp1") # resolve CNAMEs to avoid certificate errors (needed if no wildcard certificate is used)
 doOutputVerbose "Attempting to download and process recovery from [$tmp1]..."
 retcode=$(wget https://$tmp1/recovery/ -O "$recovery" -T 5 -q && echo 0 || echo $?)
-if [ $retcode -eq 0 ]; then  
+if [ $retcode -eq 0 ]; then
   doOutputVerbose "Recovery script has downloaded without error"
   tmp2=$(tail -n 1 "$recovery")
-  if [ "$tmp2" == "# EOF" ]; then  
+  if [ "$tmp2" == "# EOF" ]; then
     doOutputVerbose "Recovery script is completely downloaded"
     # If recovery key exists it needs to be contained in the recovery file
     if [ -e "$filename_recovery_key" ]; then
@@ -420,7 +420,7 @@ if [ $retcode -eq 0 ]; then
       if ! grep -q "$tmp3" "${recovery}"; then
         tmp1=$(getCounterFile "${filename_counter_noconnect}")
         if [ $tmp1 -lt 5 ]; then # require five machine restarts to disable security check
-          doOutput "Recovery script failed validation. Not running it"        
+          doOutput "Recovery script failed validation. Not running it"
           recovery=
         else
           doOutput "Recovery script failed validation. Running anyway since management connection seems to have failed permanently"
@@ -461,7 +461,7 @@ if [ -e "/sbin/apk" ]; then # Alpine (apk-based)
   fi
   if ! apk info -q --installed wireguard-tools wireguard-tools-wg wireguard-tools-wg-quick bind-tools curl ; then
     doOutputVerbose "Making sure that required tool packages are installed"
-    # WireGuard tools  
+    # WireGuard tools
     apk add wireguard-tools wireguard-tools-wg wireguard-tools-wg-quick
     # "host" command and "dig" command
     apk add bind-tools
@@ -480,16 +480,17 @@ else # non-Alpine
       apt-get update
       if [[ "$ID" == "raspbian" ]]; then
         apt-get install raspberrypi-kernel-headers
-      fi    
+      fi
       apt-get -y install wireguard
       restart_required=1
     else
-      exitWithError "The operating system version [$VERSION_CODENAME] is not yet supported"
+      doOutput "Installing WireGuard..."
+      apt-get -y install wireguard
     fi
   fi
   # "host" command
   if [ ! -e "/usr/bin/host" ]; then
-    doOutputVerbose "Installing bind9-host package"  
+    doOutputVerbose "Installing bind9-host package"
     apt-get install bind9-host
   fi
 fi
@@ -517,7 +518,7 @@ if [ ! -e "${filename_recovery_key}" ] && [ ! -e "${filename_recovery_key}.tmp" 
   doOutputVerbose "Generating recovery key"
   install -m 700 /dev/null "${filename_recovery_key}.tmp"
   wg genpsk > "${filename_recovery_key}.tmp"
-fi  
+fi
 if [ ! -e "${filename_recovery_key}" ]; then
   recovery_key=$(cat "${filename_recovery_key}.tmp")
 else
@@ -525,9 +526,9 @@ else
 fi
 if [ ! -e "${filename_wg_private}" ]; then
   install -m 700 /dev/null "${filename_wg_private}"
-  wg genkey > "${filename_wg_private}"  
+  wg genkey > "${filename_wg_private}"
 fi
-wg_private=$(cat "${filename_wg_private}")  
+wg_private=$(cat "${filename_wg_private}")
 wg_public=$(echo "$wg_private" | wg pubkey)
 
 ### Download and run bootstrap config script until management connection is up and working ###
@@ -554,11 +555,11 @@ do
     # --get would encode data in query string instead of posting the data
     http_response=$(curl --max-time 5 --silent "${curl_opts_bootstrap[@]}" --write-out %{http_code} --data-urlencode "scriptversion=$scriptversion"  --data-urlencode "mac=$mac_addr" --data-urlencode "hostname=$(hostname -f)" --data-urlencode "recovery-key=$recovery_key" --data-urlencode "config-key=$config_key" --data-urlencode "wg_public=$wg_public" "https://$controller/bootstrap/" --output "$filename_bootstrapconfig" && echo 0 || echo $?)
     retcode=$?
-    if [ $retcode -eq 0 ]; then  
+    if [ $retcode -eq 0 ]; then
       if [ $http_response -eq 2000 ]; then  # a zero is appended to the usual http response code
         doOutputVerbose "Bootstrap config has downloaded without error"
         tmp2=$(tail -n 1 "$filename_bootstrapconfig")
-        if [ "$tmp2" == "# EOF" ]; then  
+        if [ "$tmp2" == "# EOF" ]; then
           doOutputVerbose "Bootstrap config is completely downloaded"
           # If config key exists it needs to be contained in the downloaded bootstrap config file
           if [ -e "$filename_config_key" ]; then
@@ -570,11 +571,11 @@ do
               doOutputVerbose "Bootstrap config validated based on config key"
             fi
           fi
-          if [ ! -z "${filename_bootstrapconfig}" ]; then        
+          if [ ! -z "${filename_bootstrapconfig}" ]; then
             chmod u+x "${filename_bootstrapconfig}"
             doOutput "Running downloaded bootstrap config script..."
             source "${filename_bootstrapconfig}"
-            counter=0            
+            counter=0
             # Successfully transmitted config key and recovery key, thus using them now
             if [ ! -e "${filename_recovery_key}.tmp" ]; then
               mv "${filename_recovery_key}.tmp" "${filename_recovery_key}"
@@ -585,19 +586,19 @@ do
           fi
         fi
       elif [ $http_response -eq "00052" ]; then  # http response 204
-        doOutputVerbose "Bootstrap config download failed. Controller reached but config not yet available. Ignoring and continuing"      
+        doOutputVerbose "Bootstrap config download failed. Controller reached but config not yet available. Ignoring and continuing"
       else
         doOutputVerbose "Bootstrap config download failed with http response ${http_response}. Ignoring and continuing"
       fi
     else
       doOutputVerbose "Bootstrap config download failed. curl returned error code ${retcode}. Ignoring and continuing"
-    fi  
+    fi
   fi
   if [ -e "${wg_configfile}" ]; then
     # Enable management interface
     retcode=$(wg-quick down "$wg_interface" 2>&1 > /dev/null && echo 0 || echo $?) # for the case that interface is up
     retcode=$(wg-quick up "$wg_interface" && echo 0 || echo $?)
-    if [ $retcode -eq 0 ]; then  
+    if [ $retcode -eq 0 ]; then
       doOutputVerbose "Interface [$wg_interface] is up"
     else
       doOutput "Error setting up interface [$wg_interface]"
