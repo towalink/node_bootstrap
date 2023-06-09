@@ -105,7 +105,7 @@ function getPrimaryInterface # : interface_name
   while [ -z "${interface}" ] && [ $counter -lt 60 ];
   do
     # "grep -v wg" to ignore WireGuard interfaces
-    interface=$(route -n | grep '^0.0.0.0' | grep -v wg | grep -o '[^ ]*$')
+    interface=$(/sbin/route -n | grep '^0.0.0.0' | grep -v wg | grep -o '[^ ]*$')
     #echo $(ip route get 8.8.8.8 | awk -- '{printf $5}') # alternative way to get primary interface
     if [ ! -z "${interface}" ]; then
       # Wait for network to be configured (relevant while still starting up) and then try again
