@@ -445,20 +445,6 @@ fi
 
 ### Make sure needed packages are installed ###
 if [ -e "/sbin/apk" ]; then # Alpine (apk-based)
-  # WireGuard kernel
-  if [[ $(apk info | grep linux-virt | wc -l) -ne 0 ]]; then # virt kernel installed?
-    if ! apk info -q --installed wireguard-virt ; then
-      doOutput "Installing WireGuard virt kernel..."
-      apk add wireguard-virt
-      restart_required=1
-    fi
-  else # no virt kernel installed
-    if ! apk info -q --installed wireguard-virt ; then
-      doOutput "Installing WireGuard kernel..."
-      apk add wireguard-vanilla
-      restart_required=1
-    fi
-  fi
   if ! apk info -q --installed wireguard-tools wireguard-tools-wg wireguard-tools-wg-quick bind-tools curl ; then
     doOutputVerbose "Making sure that required tool packages are installed"
     # WireGuard tools
